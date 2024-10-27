@@ -1,0 +1,38 @@
+{
+	"name": "linearize",
+	"version": "0.1.0",
+	"description": "Javascript object encoder",
+	"main": "index.js",
+	"dependencies": {
+	},
+	"scripts": {
+		"test": "node ./test/test.js"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/rinne/node-linearize.git"
+	},
+	"keywords": [
+		"encode",
+		"encoding",
+		"decode",
+		"decoding",
+		"serialize",
+		"serialisation",
+		"linearize",
+		"linearisation"
+	],
+	"author": {
+		"name": "Timo J. Rinne",
+		"email": "tri@iki.fi",
+		"url": "https://github.com/rinne/"
+	},
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/rinne/node-linearize/issues"
+	},
+	"homepage": "https://github.com/rinne/node-linearize#readme"
+}
