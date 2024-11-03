@@ -94,7 +94,7 @@ function number_dec(b) {
 			if (b.length < 9) {
 				throw new Error('Truncated input');
 			}
-			let n = new Float64Array(b.slice(1, 9).buffer);
+			let n = new Float64Array(b.slice(1, 9).reverse().buffer);
 			if (! Number.isFinite(n[0])) {
 				throw new Error('Invalid input');
 			}
@@ -117,10 +117,10 @@ function number_dec(b) {
 		if (b.length < 3) {
 			throw new Error('Truncated input');
 		}
-		if (b[1] == 0) {
+		if (b[2] == 0) {
 			throw new Error('Invalid input');
 		}
-		n = (b[1] << 8) | b[2];
+		n = (b[2] << 8) | b[1];
 		return { val: neg ? -n : n, len: 3 };
 	case T_INT_NEG_L3:
 		neg = true;
@@ -128,10 +128,10 @@ function number_dec(b) {
 		if (b.length < 4) {
 			throw new Error('Truncated input');
 		}
-		if (b[1] == 0) {
+		if (b[3] == 0) {
 			throw new Error('Invalid input');
 		}
-		n = (b[1] << 16) | (b[2] << 8) | b[3];
+		n = (b[3] << 16) | (b[2] << 8) | b[1];
 		return { val: neg ? -n : n, len: 4 };
 	case T_INT_NEG_L4:
 		neg = true;
@@ -139,10 +139,10 @@ function number_dec(b) {
 		if (b.length < 5) {
 			throw new Error('Truncated input');
 		}
-		if (b[1] == 0) {
+		if (b[4] == 0) {
 			throw new Error('Invalid input');
 		}
-		n = (b[1] * 0x1000000) + ((b[2] << 16) | (b[3] << 8) | b[4]);
+		n = (b[4] * 0x1000000) + ((b[3] << 16) | (b[2] << 8) | b[1]);
 		return { val: neg ? -n : n, len: 5 };
 	case T_INT_NEG_L5:
 		neg = true;
@@ -150,10 +150,10 @@ function number_dec(b) {
 		if (b.length < 6) {
 			throw new Error('Truncated input');
 		}
-		if (b[1] == 0) {
+		if (b[5] == 0) {
 			throw new Error('Invalid input');
 		}
-		n = (b[1] * 0x100000000) + (b[2] * 0x1000000) + ((b[3] << 16) | (b[4] << 8) | b[5]);
+		n = (b[5] * 0x100000000) + (b[4] * 0x1000000) + ((b[3] << 16) | (b[2] << 8) | b[1]);
 		return { val: neg ? -n : n, len: 6 };
 	case T_INT_NEG_L6:
 		neg = true;
@@ -161,10 +161,10 @@ function number_dec(b) {
 		if (b.length < 7) {
 			throw new Error('Truncated input');
 		}
-		if (b[1] == 0) {
+		if (b[6] == 0) {
 			throw new Error('Invalid input');
 		}
-		n = (b[1] * 0x10000000000) + (b[2] * 0x100000000) + (b[3] * 0x1000000) + ((b[4] << 16) | (b[5] << 8) | b[6]);
+		n = (b[6] * 0x10000000000) + (b[5] * 0x100000000) + (b[4] * 0x1000000) + ((b[3] << 16) | (b[2] << 8) | b[1]);
 		return { val: neg ? -n : n, len: 7 };
 
 	case T_INT_NEG_L7:
@@ -176,10 +176,10 @@ function number_dec(b) {
 		if (b.length < 8) {
 			throw new Error('Truncated input');
 		}
-		if (b[1] == 0) {
+		if (b[7] == 0) {
 			throw new Error('Invalid input');
 		}
-		n = (b[1] * 0x1000000000000) + (b[2] * 0x10000000000) + (b[3] * 0x100000000) + (b[4] * 0x1000000) + ((b[5] << 16) | (b[6] << 8) | b[7]);
+		n = (b[7] * 0x1000000000000) + (b[6] * 0x10000000000) + (b[5] * 0x100000000) + (b[4] * 0x1000000) + ((b[3] << 16) | (b[2] << 8) | b[1]);
 		return { val: neg ? -n : n, len: 8 };
 	case T_INT_NEG_L8:
 		neg = true;
@@ -190,10 +190,10 @@ function number_dec(b) {
 		if (b.length < 9) {
 			throw new Error('Truncated input');
 		}
-		if (b[1] == 0) {
+		if (b[8] == 0) {
 			throw new Error('Invalid input');
 		}
-		n = (b[1] * 0x100000000000000) + (b[2] * 0x1000000000000) + (b[3] * 0x10000000000) + (b[4] * 0x100000000) + (b[5] * 0x1000000) + ((b[6] << 16) | (b[7] << 8) | b[8]);
+		n = (b[8] * 0x100000000000000) + (b[7] * 0x1000000000000) + (b[6] * 0x10000000000) + (b[5] * 0x100000000) + (b[4] * 0x1000000) + ((b[3] << 16) | (b[2] << 8) | b[1]);
 		return { val: neg ? -n : n, len: 9 };
 	}
 	throw new Error('Invalid input');
@@ -255,47 +255,47 @@ function number_enc(n) {
 		}
 		if (n < 0x10000) {
 			return Uint8Array.from([ neg ? T_INT_NEG_L2 : T_INT_L2,
-									 n >> 8,
-									 n & 0xff ]);
+									 n & 0xff,
+									 n >> 8 ]);
 		}
 		if (n < 0x1000000) {
 			return Uint8Array.from([ neg ? T_INT_NEG_L3 : T_INT_L3,
-									 n >> 16,
+									 n & 0xff,
 									 (n >> 8) & 0xff,
-									 n & 0xff ]);
+									 n >> 16 ]);
 		}
 		if (n < 0x100000000) {
 			return Uint8Array.from([ neg ? T_INT_NEG_L4 : T_INT_L4,
-									 n >> 24,
-									 (n >> 16) & 0xff,
+									 n & 0xff,
 									 (n >> 8) & 0xff,
-									 n & 0xff ]);
+									 (n >> 16) & 0xff,
+									 n >> 24 ]);
 		}
 		if (n < 0x10000000000) {
 			let l = n % 0x1000000;
 			let h = (n - l) / 0x1000000;
 			return Uint8Array.from([ neg ? T_INT_NEG_L5 : T_INT_L5,
-									 h >> 8,
-									 h & 0xff,
-									 l >> 16,
+									 l & 0xff,
 									 (l >> 8) & 0xff,
-									 l & 0xff ]);
+									 l >> 16,
+									 h & 0xff,
+									 h >> 8 ]);
 		}
 		if (n < 0x1000000000000) {
 			let l = n % 0x1000000;
 			let h = (n - l) / 0x1000000;
 			return Uint8Array.from([ neg ? T_INT_NEG_L6 : T_INT_L6,
-									 h >> 16,
-									 (h >> 8) & 0xff,
-									 h & 0xff,
-									 l >> 16,
+									 l & 0xff,
 									 (l >> 8) & 0xff,
-									 l & 0xff ]);
+									 l >> 16,
+									 h & 0xff,
+									 (h >> 8) & 0xff,
+									 h >> 16 ]);
 		}
 	}
 	let b = new ArrayBuffer(8);
 	(new Float64Array(b))[0] = n;
-	return new Uint8Array([ T_DOUBLE, ...(new Uint8Array(b)) ]);
+	return new Uint8Array([ T_DOUBLE, ...((new Uint8Array(b)).reverse()) ]);
 }
 
 function null_dec(b) {
