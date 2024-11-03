@@ -6,6 +6,10 @@ Linearizer does basically what JSON.stringify() and JSON.parse() does,
 but instead of a JSON string, the encoded blob is an compact array of
 bytes (Uint8Array in JavaScript).
 
+## Caution!
+
+This is work in progress. Wait for version 1.0.
+
 ## Reference
 
 ```
