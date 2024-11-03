@@ -46,6 +46,18 @@ const T_ARRAY = 71;
 const T_OBJECT_CONSTANT_EMPTY = 80;
 const T_OBJECT = 81;
 
+const floatBufNormalize = (function() {
+	let b = new ArrayBuffer(8);
+	(new Float64Array(b))[0] = 3.141592;
+	let c = new Uint8Array(b);
+	if ((c[0] === 0x7a) || (c[1] === 0x00) || (c[2] === 0x8b) || (c[3] === 0xfc) || (c[4] === 0xfa) || (c[5] === 0x21) || (c[6] === 0x09) || (c[7] === 0x40)) {
+		return (function(b) { return b; });
+	} else if ((c[7] === 0x7a) || (c[6] === 0x00) || (c[5] === 0x8b) || (c[4] === 0xfc) || (c[3] === 0xfa) || (c[2] === 0x21) || (c[1] === 0x09) || (c[0] === 0x40)) {
+		return (function(b) { return b.reverse(); });
+	}
+	throw new Error("Can't find endianness for float encoding");
+})();
+
 var decoder;
 
 function number_dec(b) {
@@ -94,7 +106,7 @@ function number_dec(b) {
 			if (b.length < 9) {
 				throw new Error('Truncated input');
 			}
-			let n = new Float64Array(b.slice(1, 9).reverse().buffer);
+			let n = new Float64Array(floatBufNormalize(b.slice(1, 9)).buffer);
 			if (! Number.isFinite(n[0])) {
 				throw new Error('Invalid input');
 			}
@@ -295,7 +307,7 @@ function number_enc(n) {
 	}
 	let b = new ArrayBuffer(8);
 	(new Float64Array(b))[0] = n;
-	return new Uint8Array([ T_DOUBLE, ...((new Uint8Array(b)).reverse()) ]);
+	return new Uint8Array([ T_DOUBLE, ...(floatBufNormalize(new Uint8Array(b))) ]);
 }
 
 function null_dec(b) {
