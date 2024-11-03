@@ -46,16 +46,29 @@ const T_ARRAY = 71;
 const T_OBJECT_CONSTANT_EMPTY = 80;
 const T_OBJECT = 81;
 
-const floatBufNormalize = (function() {
-	let b = new ArrayBuffer(8);
-	(new Float64Array(b))[0] = 3.141592;
-	let c = new Uint8Array(b);
-	if ((c[0] === 0x7a) || (c[1] === 0x00) || (c[2] === 0x8b) || (c[3] === 0xfc) || (c[4] === 0xfa) || (c[5] === 0x21) || (c[6] === 0x09) || (c[7] === 0x40)) {
-		return (function(b) { return b; });
-	} else if ((c[7] === 0x7a) || (c[6] === 0x00) || (c[5] === 0x8b) || (c[4] === 0xfc) || (c[3] === 0xfa) || (c[2] === 0x21) || (c[1] === 0x09) || (c[0] === 0x40)) {
-		return (function(b) { return b.reverse(); });
+const [ floatBufInternalize, floatBufExternalize ] = (function() {
+	let lt = (function() {
+		let b = new ArrayBuffer(8);
+		let d = (new Float64Array(b))[0] =  3.14159265;
+		let a = Array.from((new Uint8Array(b)));
+		let l = [ a.indexOf(0xf1), a.indexOf(0xd4), a.indexOf(0xc8), a.indexOf(0x53), a.indexOf(0xfb), a.indexOf(0x21), a.indexOf(0x09), a.indexOf(0x40) ];
+		if (l.indexOf(-1) != -1) {
+			throw new Error("Can't find endianness for float encoding");
+		}
+		return Uint8Array.from(l);
+	})();
+	if ((lt[0] == 0) && (lt[1] == 1) && (lt[2] == 2) && (lt[3] == 3) && (lt[4] == 4) && (lt[5] == 5) && (lt[6] == 6) && (lt[7] == 7)) {
+		return [ (function(b) { return b; }), (function(b) { return b; }) ];
 	}
-	throw new Error("Can't find endianness for float encoding");
+	let rt = Uint8Array.from([ lt.indexOf(0), lt.indexOf(1), lt.indexOf(2), lt.indexOf(3), lt.indexOf(4), lt.indexOf(5), lt.indexOf(6), lt.indexOf(7) ]);
+	return [
+		(function(b) {
+			return new Uint8Array([ b[rt[0]], b[rt[1]], b[rt[2]], b[rt[3]], b[rt[4]], b[rt[5]], b[rt[6]], b[rt[7]] ]);
+		}),
+		(function(b) {
+			return new Uint8Array([ b[lt[0]], b[lt[1]], b[lt[2]], b[lt[3]], b[lt[4]], b[lt[5]], b[lt[6]], b[lt[7]] ]);
+		})
+	];
 })();
 
 var decoder;
@@ -106,11 +119,11 @@ function number_dec(b) {
 			if (b.length < 9) {
 				throw new Error('Truncated input');
 			}
-			let n = new Float64Array(floatBufNormalize(b.slice(1, 9)).buffer);
-			if (! Number.isFinite(n[0])) {
+			let n = (new Float64Array(floatBufInternalize(b.slice(1, 9)).buffer))[0];
+			if (! Number.isFinite(n)) {
 				throw new Error('Invalid input');
 			}
-			return { val: n[0], len: 9 };
+			return { val: n, len: 9 };
 		}
 	case T_INT_NEG_L1:
 		neg = true;
@@ -307,7 +320,7 @@ function number_enc(n) {
 	}
 	let b = new ArrayBuffer(8);
 	(new Float64Array(b))[0] = n;
-	return new Uint8Array([ T_DOUBLE, ...(floatBufNormalize(new Uint8Array(b))) ]);
+	return new Uint8Array([ T_DOUBLE, ...(floatBufExternalize(new Uint8Array(b))) ]);
 }
 
 function null_dec(b) {
